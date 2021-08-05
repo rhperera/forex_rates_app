@@ -15,5 +15,9 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "indent": ["error", 4],
+        "linebreak-style": ["error", "unix"],
+        "require-jsdoc": "off",
+        "new-cap": ["error", { "capIsNew": false }]
     }
 }

@@ -1,11 +1,10 @@
-import { IOracleService } from "./oracle-service"
-import { ICacheService } from "./cache-service"
-import { FixerService } from './oracle-service';
-import { RedisCacheService } from './cache-service';
-import { CurrencyRate } from "../models/currency-rate";
+import {IOracleService} from './oracle-service';
+import {ICacheService} from './cache-service';
+import {FixerService} from './oracle-service';
+import {RedisCacheService} from './cache-service';
+import {CurrencyRate} from '../models/currency-rate';
 
 export class DataService {
-
     private oracleService: IOracleService;
     private cacheService: ICacheService;
 
@@ -15,13 +14,15 @@ export class DataService {
     }
 
     async getRateOfPair(quote: string) : Promise<CurrencyRate> {
-        let currencyRate: CurrencyRate = await this.oracleService.getRateOfPair(quote);
+        const currencyRate: CurrencyRate =
+                await this.oracleService.getRateOfPair(quote);
         return currencyRate;
     }
 }
 
-const dataService :DataService = new DataService(new FixerService(), new RedisCacheService()); 
+const dataService :DataService =
+        new DataService(new FixerService(), new RedisCacheService());
 
 export const getDataService = () : DataService => {
     return dataService;
-}
+};

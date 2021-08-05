@@ -1,15 +1,14 @@
-import { type } from "os";
-import { ObjectType, Field, ID, Float } from "type-graphql";
+import {ObjectType, Field, ID, Float} from 'type-graphql';
 
 @ObjectType()
 export class CurrencyRate {
-    @Field(type => ID)
+    @Field((type) => ID)
     id: string;
-    
+
     @Field()
     quote: string;
 
-    @Field(type => Float)
+    @Field((type) => Float)
     rate: number;
 }
 
