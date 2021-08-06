@@ -14,8 +14,20 @@ export class DataService {
     }
 
     async getRateOfPair(quote: string) : Promise<CurrencyRate> {
-        const currencyRate: CurrencyRate =
+        let currencyRate: CurrencyRate = null;
+        currencyRate = await this.cacheService.find(quote);
+        if (currencyRate !== null) {
+            return currencyRate;
+        }
+        console.log(`Not in cache, fetching from oracle ${quote}`);
+        // This quote is not in cache. get it from oracle and update cache
+        currencyRate =
                 await this.oracleService.getRateOfPair(quote);
+        if (currencyRate !== null) {
+            if (await this.cacheService.add(currencyRate) === false) {
+                console.log(`Failed to update cache with ${currencyRate.quote}`);
+            }
+        }
         return currencyRate;
     }
 }

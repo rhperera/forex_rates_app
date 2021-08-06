@@ -7,8 +7,8 @@ export interface IOracleService {
     getRateOfPair(quote: string) : Promise<CurrencyRate>
 }
 
-const API_KEY: string = '';
-const FIXER_END_POINT: string = 'http://data.fixer.io/api';
+const API_KEY: string = process.env.FIXER_API_KEY;
+const FIXER_END_POINT: string = process.env.FIXER_END_POINT;
 
 export class FixerService implements IOracleService {
     getRateOfPair = async (quote: string) : Promise<CurrencyRate> => {
