@@ -8,6 +8,8 @@ COPY package*.json ./
 
 USER node
 
+RUN yarn global add ts-node
+
 RUN yarn
 
 COPY --chown=node:node . .
