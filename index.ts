@@ -4,15 +4,12 @@ import {getSchema} from './src/data/schema';
 import {ApolloServer} from 'apollo-server-express';
 import {createServer, Server} from 'http';
 import {CurrencyHandler} from './src/handlers/handler';
-import {getDataService} from './src/services/data-service';
-import dotenv from 'dotenv';
+import {Config} from './src/utils/config';
 
-const PORT: string = '8090';
-
-dotenv.config();
+const config: Config = Config.getInstance();
 const app: express.Application = express();
 const router: express.Router = express.Router();
-const currencyHandler: CurrencyHandler = new CurrencyHandler(getDataService());
+const currencyHandler: CurrencyHandler = new CurrencyHandler();
 
 const initRouters = ():void => {
     router.use('/get/rate/:quote', currencyHandler.getCurrencyRate);
@@ -28,8 +25,9 @@ async function startApolloServer() {
     app.use('/api/v1', router);
     initRouters();
     apolloServer.applyMiddleware({app});
-    httpServer.listen(PORT, () =>
-        console.log(`Server is now running on http://localhost:${PORT}/graphql`));
+    const port = parseInt(config.PORT);
+    httpServer.listen(port, () =>
+        console.log(`Server is now running on http://localhost:${port}/graphql`));
 }
 
 startApolloServer();

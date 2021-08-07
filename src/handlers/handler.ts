@@ -2,17 +2,17 @@ import express from 'express';
 import {CurrencyRate} from '../models/currency-rate';
 import {DataService} from '../services/data-service';
 
+class HttpResponse {
+    public data: any = {};
+}
+
 export class CurrencyHandler {
-    private dataService: DataService;
-
-    constructor(oS : DataService) {
-        this.dataService = oS;
-    }
-
     async getCurrencyRate(req: express.Request, res: express.Response) {
         const quote: string = req.params.quote;
         const result: CurrencyRate =
-                await this.dataService.getRateOfPair(quote);
-        res.send(`${result}`);
+                await DataService.getInstance().getRateOfPair(quote);
+        const httpResObj: HttpResponse = new HttpResponse();
+        httpResObj.data['CurrencyRate'] = result;
+        res.send(httpResObj);
     }
 }

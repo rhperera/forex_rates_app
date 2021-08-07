@@ -1,19 +1,25 @@
-import {IOracleService} from './oracle-service';
-import {ICacheService} from './cache-service';
-import {FixerService} from './oracle-service';
-import {RedisCacheService} from './cache-service';
+import {FixerService, IOracleService} from './oracle-service';
+import {ICacheService, RedisCacheService} from './cache-service';
 import {CurrencyRate} from '../models/currency-rate';
 
 export class DataService {
+    private static instance: DataService = null;
     private oracleService: IOracleService;
     private cacheService: ICacheService;
 
-    constructor(oS: IOracleService, cS: ICacheService) {
+    private constructor(oS: IOracleService, cS: ICacheService) {
         this.oracleService = oS;
         this.cacheService = cS;
     }
 
-    async getRateOfPair(quote: string) : Promise<CurrencyRate> {
+    public static getInstance = (): DataService => {
+        if (DataService.instance === null) {
+            DataService.instance = new DataService(new FixerService(), new RedisCacheService());
+        }
+        return DataService.instance;
+    }
+
+    getRateOfPair = async (quote: string) : Promise<CurrencyRate> => {
         let currencyRate: CurrencyRate = null;
         currencyRate = await this.cacheService.find(quote);
         if (currencyRate !== null) {
@@ -30,11 +36,14 @@ export class DataService {
         }
         return currencyRate;
     }
+
+    updateCacheOnTimer = async () => {
+        const keys: string[] = await this.cacheService.getAllKeys();
+        const updates: Array<[key:string, value:string]> =
+            await this.oracleService.getRateOfMultiplePairs(keys);
+        const result: boolean = await this.cacheService.updateAllValues(...updates);
+        if (!result) {
+            console.log('updating cache failed for timer');
+        }
+    }
 }
-
-const dataService :DataService =
-        new DataService(new FixerService(), new RedisCacheService());
-
-export const getDataService = () : DataService => {
-    return dataService;
-};

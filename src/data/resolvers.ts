@@ -1,5 +1,5 @@
 import {CurrencyRate} from '../models/currency-rate';
-import {DataService, getDataService} from '../services/data-service';
+import {DataService} from '../services/data-service';
 import {Resolver, Query, Arg} from 'type-graphql';
 
 
@@ -8,7 +8,7 @@ export class CurrencyRateResolver {
     private dataService: DataService;
 
     constructor() {
-        this.dataService = getDataService();
+        this.dataService = DataService.getInstance();
     }
 
   @Query((returns) => CurrencyRate)

@@ -1,33 +1,34 @@
 import axios from 'axios';
 import {CurrencyRate} from '../models/currency-rate';
+import {Config} from '../utils/config';
 import {splitBaseAndQuote} from '../utils/utils';
 
 
 export interface IOracleService {
-    getRateOfPair(quote: string) : Promise<CurrencyRate>
+    getRateOfPair(quote: string) : Promise<CurrencyRate>;
+    getRateOfMultiplePairs(keys: string[]) : Promise<Array<[key: string, value:string]>>;
 }
 
-const API_KEY: string = process.env.FIXER_API_KEY;
-const FIXER_END_POINT: string = process.env.FIXER_END_POINT;
-
 export class FixerService implements IOracleService {
+    private apiKey: string;
+    private endPoint: string;
+
+    constructor() {
+        this.apiKey = Config.getInstance().FIXER_API_KEY;
+        this.endPoint = Config.getInstance().FIXER_END_POINT;
+    }
+
     getRateOfPair = async (quote: string) : Promise<CurrencyRate> => {
         const qArray: string[] = splitBaseAndQuote(quote);
 
         try {
-            console.log(qArray);
-            const response = await axios.get(`${FIXER_END_POINT}/latest`,
-                {params: this.getParams(qArray[0], qArray[1])});
-
-            console.log(response.data);
+            const response = await axios.get(`${this.endPoint}/latest`,
+                {params: this.getParams([qArray[0], qArray[1]])});
 
             if (response.status === 200 && response.data.success === true ) {
-                const cR: CurrencyRate = new CurrencyRate();
-                cR.id = quote;
-                cR.quote = quote;
-                cR.rate = this.calculateRate(
+                const cR: CurrencyRate = new CurrencyRate(quote, this.calculateRate(
                     response.data.rates[qArray[0]],
-                    response.data.rates[qArray[1]]);
+                    response.data.rates[qArray[1]]));
                 return cR;
             }
 
@@ -39,14 +40,43 @@ export class FixerService implements IOracleService {
         }
     }
 
-    getParams = (base: string, symbol: string) : object => {
+    getRateOfMultiplePairs = async (keys: string[])
+        : Promise<Array<[key: string, value:string]>> => {
+        const keySet: Set<string> = new Set();
+        keys.forEach((key) => {
+            const qArray: string[] = splitBaseAndQuote(key);
+            keySet.add(qArray[0]);
+            keySet.add(qArray[1]);
+        });
+        const quoteRates: Array<[key: string, value: string]> = [];
+        console.log(keySet);
+        try {
+            const response = await axios.get(`${this.endPoint}/latest`,
+                {params: this.getParams([...keySet])});
+            if (response.status === 200 && response.data.success === true ) {
+                keys.forEach((key) => {
+                    const qArray: string[] = splitBaseAndQuote(key);
+                    const rate: number = this.calculateRate(
+                        response.data.rates[qArray[0]],
+                        response.data.rates[qArray[1]]);
+                    quoteRates.push([key, rate.toString()]);
+                });
+                return quoteRates;
+            }
+        } catch (error) {
+            console.log(error);
+            return quoteRates;
+        }
+    }
+
+    private getParams = (symbols: string[]) : object => {
         return {
-            access_key: API_KEY,
-            symbols: `${base},${symbol}`,
+            access_key: this.apiKey,
+            symbols: symbols.toString(),
         };
     }
 
-    calculateRate = (baseRate: number, quoteRate: number) : number => {
+    private calculateRate = (baseRate: number, quoteRate: number) : number => {
         return quoteRate/baseRate;
     }
 }

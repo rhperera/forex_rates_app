@@ -10,17 +10,23 @@ beforeAll( () => {
     cacheService = new RedisCacheService();
 });
 
-test('CacheServiceAddAndGetTest', async () => {
-    const quote = new CurrencyRate();
-    quote.id = 'USD-LKR';
-    quote.quote = 'USD-LKR';
-    quote.rate = 189.09;
+test('RedisCache_add_find_delete', async () => {
+    const quote = new CurrencyRate('USD-LKR', 100);
     const setRes = await cacheService.add(quote);
     const getRes = await cacheService.find('USD-LKR');
     const delRes = await cacheService.delete('USD-LKR');
     expect(setRes).toBe(true);
     expect(getRes).toEqual(quote);
     expect(delRes).toBe(true);
+});
+
+test('GetAllKeys', async () => {
+    const arr: Array<[key: string, value: string]> = [];
+    arr.push(['USD-SGD', '100']);
+    arr.push(['SGD-LKR', '200']);
+    await cacheService.updateAllValues(...arr);
+    const keys = await cacheService.getAllKeys();
+    expect(keys).toEqual(['SGD-LKR', 'USD-SGD']);
 });
 
 afterAll(async () => {
