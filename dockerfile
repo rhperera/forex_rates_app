@@ -16,4 +16,4 @@ COPY --chown=node:node . .
 
 EXPOSE 8080
 
-CMD [ "./start.sh" ]
+CMD [ "yarn", "start" ]
