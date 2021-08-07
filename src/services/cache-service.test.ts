@@ -11,7 +11,7 @@ beforeAll( () => {
 });
 
 test('RedisCache_CRUD', async () => {
-    const quote = new CurrencyRate('USD-LKR', 100);
+    const quote = new CurrencyRate('USD-LKR', 100, 0.5);
     const setRes = await cacheService.add(quote);
     const getRes = await cacheService.find('USD-LKR');
     const delRes = await cacheService.delete('USD-LKR');
@@ -31,7 +31,7 @@ test('find_withNull', async () => {
 });
 
 test('add_givenNullValues', async () => {
-    const getRes = await cacheService.add(new CurrencyRate(null, null));
+    const getRes = await cacheService.add(new CurrencyRate(null, null, null));
     expect(getRes).toBe(false);
 });
 

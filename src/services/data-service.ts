@@ -12,14 +12,14 @@ export class DataService {
         this.cacheService = cS;
     }
 
-    public static getInstance = (): DataService => {
+    public static getInstance(): DataService {
         if (DataService.instance === null) {
             DataService.instance = new DataService(new FixerService(), new RedisCacheService());
         }
         return DataService.instance;
     }
 
-    getRateOfPair = async (quote: string) : Promise<CurrencyRate> => {
+    async getRateOfPair(quote: string) : Promise<CurrencyRate> {
         let currencyRate: CurrencyRate = null;
         currencyRate = await this.cacheService.find(quote);
         if (currencyRate !== null) {
@@ -37,7 +37,7 @@ export class DataService {
         return currencyRate;
     }
 
-    updateCacheOnTimer = async () => {
+    async updateCacheOnTimer() {
         const keys: string[] = await this.cacheService.getAllKeys();
         const updates: Array<[key:string, value:string]> =
             await this.oracleService.getRateOfMultiplePairs(keys);
@@ -45,5 +45,9 @@ export class DataService {
         if (!result) {
             console.log('updating cache failed for timer');
         }
+    }
+
+    async destroy() {
+        await this.cacheService.disconnect();
     }
 }

@@ -18,7 +18,7 @@ export class FixerService implements IOracleService {
         this.endPoint = Config.getInstance().FIXER_END_POINT;
     }
 
-    getRateOfPair = async (quote: string) : Promise<CurrencyRate> => {
+    async getRateOfPair(quote: string) : Promise<CurrencyRate> {
         if (quote === null || quote == '') {
             console.log('Null string received');
             return null;
@@ -29,12 +29,15 @@ export class FixerService implements IOracleService {
             const response = await this.getFromAPI([qArray[0], qArray[1]]);
 
             if (response.status === 200 && response.data.success === true ) {
-                const cR: CurrencyRate = new CurrencyRate(quote, this.calculateRate(
-                    response.data.rates[qArray[0]],
-                    response.data.rates[qArray[1]]));
-                return cR;
+                const rate1: number = response.data.rates[qArray[0]];
+                const rate2: number = response.data.rates[qArray[1]];
+                if (rate1 !== undefined && rate2 !== undefined) {
+                    const cR: CurrencyRate = new CurrencyRate(quote,
+                        this.calculateRate(rate1, rate2),
+                        this.calculateRate(rate2, rate1));
+                    return cR;
+                }
             }
-
             console.log(response.status);
             return null;
         } catch (error) {
@@ -43,8 +46,8 @@ export class FixerService implements IOracleService {
         }
     }
 
-    getRateOfMultiplePairs = async (keys: string[])
-        : Promise<Array<[key: string, value:string]>> => {
+    async getRateOfMultiplePairs(keys: string[])
+        : Promise<Array<[key: string, value:string]>> {
         const keySet: Set<string> = new Set();
         keys.forEach((key) => {
             const qArray: string[] = splitBaseAndQuote(key);
@@ -61,7 +64,10 @@ export class FixerService implements IOracleService {
                     const rate: number = this.calculateRate(
                         response.data.rates[qArray[0]],
                         response.data.rates[qArray[1]]);
-                    quoteRates.push([key, rate.toString()]);
+                    const reversedRate: number = this.calculateRate(
+                        response.data.rates[qArray[1]],
+                        response.data.rates[qArray[0]]);
+                    quoteRates.push([key, `${rate.toString()}|${reversedRate.toString()}`]);
                 });
                 return quoteRates;
             }
@@ -82,14 +88,17 @@ export class FixerService implements IOracleService {
         }
     }
 
-    private getParams = (symbols: string[]) : object => {
+    private getParams(symbols: string[]) : object {
         return {
             access_key: this.apiKey,
             symbols: symbols.toString(),
         };
     }
 
-    private calculateRate = (baseRate: number, quoteRate: number) : number => {
+    private calculateRate(baseRate: number, quoteRate: number) : number {
+        if (baseRate <= 0 || quoteRate <= 0) {
+            return 0;
+        }
         return quoteRate/baseRate;
     }
 }

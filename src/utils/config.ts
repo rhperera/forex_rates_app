@@ -15,7 +15,7 @@ export class Config {
         this.FIXER_END_POINT = process.env.FIXER_END_POINT || '127.0.0.1';
     }
 
-    public static getInstance = () : Config => {
+    public static getInstance() : Config {
         if (Config.instance === null) {
             Config.instance = new Config();
         }

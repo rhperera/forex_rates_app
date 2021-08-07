@@ -15,6 +15,7 @@ export let apolloServer: ApolloServer;
 
 const initRouters = ():void => {
     router.use('/get/rate/:quote', currencyHandler.getCurrencyRate);
+    router.use('/updateCache', currencyHandler.upateCache);
 };
 
 export const startApolloServer = async () => {

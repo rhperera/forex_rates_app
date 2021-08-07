@@ -18,4 +18,15 @@ export class CurrencyHandler {
         httpResObj.data['CurrencyRate'] = result;
         res.send(httpResObj);
     }
+
+    async upateCache(req: express.Request, res: express.Response) {
+        if (req.hostname.toString() !== 'localhost' ) {
+            console.log(req.hostname.toString());
+            res.status(405).send();
+        } else {
+            const httpResObj: HttpResponse = new HttpResponse();
+            await DataService.getInstance().updateCacheOnTimer();
+            res.status(200).send(httpResObj);
+        }
+    }
 }

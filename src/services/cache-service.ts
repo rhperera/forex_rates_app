@@ -19,13 +19,15 @@ export class RedisCacheService implements ICacheService {
             host: Config.getInstance().REDIS_HOST_IP});
     }
 
-    find = async (quote: string) : Promise<CurrencyRate> => {
+    async find(quote: string) : Promise<CurrencyRate> {
         try {
             const rate: string = await this.asyncRedis.get(quote);
             if (rate === null || rate === '') {
                 return null;
             }
-            const q: CurrencyRate = new CurrencyRate(quote, parseFloat(rate));
+            const rates: string[] = rate.split('|');
+            const q: CurrencyRate = new CurrencyRate(quote,
+                parseFloat(rates[0]), parseFloat(rates[1]));
             return q;
         } catch (err) {
             console.log(err);
@@ -33,12 +35,14 @@ export class RedisCacheService implements ICacheService {
         }
     }
 
-    add = async (quote: CurrencyRate) : Promise<boolean> => {
+    async add(quote: CurrencyRate) : Promise<boolean> {
         // keep this alive for 1 and half hours.
         // We will update the cache every one hour
         try {
-            const result = await this.asyncRedis.set(
-                quote.quote, quote.rate.toString(), ['EX', 7200]);
+            const result = await this.asyncRedis.set(quote.quote,
+                quote.rate.toString() + '|' + quote.reversedRate.toString(),
+                ['EX', 7200]);
+
             if (result === 'OK') {
                 return true;
             }
@@ -49,7 +53,7 @@ export class RedisCacheService implements ICacheService {
         }
     }
 
-    delete = async (quote: string) : Promise<boolean> => {
+    async delete(quote: string) : Promise<boolean> {
         const result = await this.asyncRedis.del(quote);
         if (result == 1) {
             return true;
@@ -57,7 +61,7 @@ export class RedisCacheService implements ICacheService {
         return false;
     }
 
-    disconnect = async () : Promise<boolean> => {
+    async disconnect() : Promise<boolean> {
         const res: string = await this.asyncRedis.quit();
         if (res === 'OK') {
             return true;
@@ -65,12 +69,12 @@ export class RedisCacheService implements ICacheService {
         return false;
     }
 
-    getAllKeys = async () : Promise<string[]> => {
+    async getAllKeys() : Promise<string[]> {
         const keys:string[] = await this.asyncRedis.keys('*-*');
         return keys;
     }
 
-    updateAllValues = async (...values: Array<[key: string, value: string]>) : Promise<boolean> => {
+    async updateAllValues(...values: Array<[key: string, value: string]>) : Promise<boolean> {
         try {
             const result: string = await this.asyncRedis.mset(...values);
             if (result === 'OK') {
