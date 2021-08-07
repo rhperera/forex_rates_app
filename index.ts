@@ -5,6 +5,7 @@ import {ApolloServer} from 'apollo-server-express';
 import {createServer, Server} from 'http';
 import {CurrencyHandler} from './src/handlers/handler';
 import {Config} from './src/utils/config';
+import {DataService} from './src/services/data-service';
 
 const config: Config = Config.getInstance();
 const app: express.Application = express();
@@ -19,6 +20,7 @@ const initRouters = ():void => {
 };
 
 export const startApolloServer = async () => {
+    await DataService.getInstance().initialUpdate();
     const schema = await getSchema();
     apolloServer = new ApolloServer({
         schema,

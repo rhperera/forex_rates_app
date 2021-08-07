@@ -6,6 +6,8 @@ WORKDIR /home/node/app
 
 COPY package*.json ./
 
+COPY yarn.lock ./
+
 USER node
 
 RUN yarn global add ts-node

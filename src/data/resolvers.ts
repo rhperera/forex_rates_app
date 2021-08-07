@@ -13,11 +13,15 @@ export class CurrencyRateResolver {
 
   @Query((returns) => CurrencyRate)
     async currencyRate(@Arg('quote') quote: string) {
-        const currencyRate = await this.dataService.getRateOfPair(quote);
-        console.log(quote);
-        if (currencyRate === undefined) {
-            console.log('Error fetching data');
+        try {
+            const currencyRate = await this.dataService.getRateOfPair(quote);
+            console.log(quote);
+            if (currencyRate === undefined) {
+                console.log('Error fetching data');
+            }
+            return currencyRate;
+        } catch (err) {
+            console.log(err);
         }
-        return currencyRate;
     }
 }

@@ -12,6 +12,12 @@ export class DataService {
         this.cacheService = cS;
     }
 
+    async initialUpdate() {
+        await this.cacheService.add(new CurrencyRate('USD-SGD', 0.0, 0.0));
+        await this.cacheService.add(new CurrencyRate('USDK-HKD', 0.0, 0.0));
+        this.updateCacheOnTimer();
+    }
+
     public static getInstance(): DataService {
         if (DataService.instance === null) {
             DataService.instance = new DataService(new FixerService(), new RedisCacheService());
