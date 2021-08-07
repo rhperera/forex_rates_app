@@ -20,23 +20,33 @@ export class RedisCacheService implements ICacheService {
     }
 
     find = async (quote: string) : Promise<CurrencyRate> => {
-        const rate: string = await this.asyncRedis.get(quote);
-        if (rate === null || rate === '') {
+        try {
+            const rate: string = await this.asyncRedis.get(quote);
+            if (rate === null || rate === '') {
+                return null;
+            }
+            const q: CurrencyRate = new CurrencyRate(quote, parseFloat(rate));
+            return q;
+        } catch (err) {
+            console.log(err);
             return null;
         }
-        const q: CurrencyRate = new CurrencyRate(quote, parseFloat(rate));
-        return q;
     }
 
     add = async (quote: CurrencyRate) : Promise<boolean> => {
         // keep this alive for 1 and half hours.
         // We will update the cache every one hour
-        const result = await this.asyncRedis.set(
-            quote.quote, quote.rate.toString(), ['EX', 7200]);
-        if (result === 'OK') {
-            return true;
+        try {
+            const result = await this.asyncRedis.set(
+                quote.quote, quote.rate.toString(), ['EX', 7200]);
+            if (result === 'OK') {
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.log(error);
+            return false;
         }
-        return false;
     }
 
     delete = async (quote: string) : Promise<boolean> => {
@@ -61,10 +71,15 @@ export class RedisCacheService implements ICacheService {
     }
 
     updateAllValues = async (...values: Array<[key: string, value: string]>) : Promise<boolean> => {
-        const result: string = await this.asyncRedis.mset(...values);
-        if (result === 'OK') {
-            return true;
+        try {
+            const result: string = await this.asyncRedis.mset(...values);
+            if (result === 'OK') {
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.log(err);
+            return false;
         }
-        return false;
     }
 }

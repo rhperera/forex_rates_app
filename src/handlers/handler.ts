@@ -8,10 +8,13 @@ class HttpResponse {
 
 export class CurrencyHandler {
     async getCurrencyRate(req: express.Request, res: express.Response) {
+        const httpResObj: HttpResponse = new HttpResponse();
         const quote: string = req.params.quote;
+        if (quote === null || quote === '') {
+            res.status(400).send(httpResObj);
+        }
         const result: CurrencyRate =
                 await DataService.getInstance().getRateOfPair(quote);
-        const httpResObj: HttpResponse = new HttpResponse();
         httpResObj.data['CurrencyRate'] = result;
         res.send(httpResObj);
     }

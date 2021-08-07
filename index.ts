@@ -10,15 +10,16 @@ const config: Config = Config.getInstance();
 const app: express.Application = express();
 const router: express.Router = express.Router();
 const currencyHandler: CurrencyHandler = new CurrencyHandler();
+export const httpServer: Server = createServer(app);
+export let apolloServer: ApolloServer;
 
 const initRouters = ():void => {
     router.use('/get/rate/:quote', currencyHandler.getCurrencyRate);
 };
 
-async function startApolloServer() {
-    const httpServer: Server = createServer(app);
+export const startApolloServer = async () => {
     const schema = await getSchema();
-    const apolloServer = new ApolloServer({
+    apolloServer = new ApolloServer({
         schema,
     });
     await apolloServer.start();
@@ -28,6 +29,6 @@ async function startApolloServer() {
     const port = parseInt(config.PORT);
     httpServer.listen(port, () =>
         console.log(`Server is now running on http://localhost:${port}/graphql`));
-}
+};
 
 startApolloServer();

@@ -10,7 +10,7 @@ beforeAll( () => {
     cacheService = new RedisCacheService();
 });
 
-test('RedisCache_add_find_delete', async () => {
+test('RedisCache_CRUD', async () => {
     const quote = new CurrencyRate('USD-LKR', 100);
     const setRes = await cacheService.add(quote);
     const getRes = await cacheService.find('USD-LKR');
@@ -18,6 +18,31 @@ test('RedisCache_add_find_delete', async () => {
     expect(setRes).toBe(true);
     expect(getRes).toEqual(quote);
     expect(delRes).toBe(true);
+});
+
+test('find_notAlreadyIn', async () => {
+    const getRes = await cacheService.find('AAA-AAA');
+    expect(getRes).toBe(null);
+});
+
+test('find_withNull', async () => {
+    const getRes = await cacheService.find(null);
+    expect(getRes).toBe(null);
+});
+
+test('add_givenNullValues', async () => {
+    const getRes = await cacheService.add(new CurrencyRate(null, null));
+    expect(getRes).toBe(false);
+});
+
+test('delete_notAlreadyIn', async () => {
+    const deleteRes = await cacheService.delete('AAA-AAA');
+    expect(deleteRes).toBe(false);
+});
+
+test('updateAllValues_emptyList', async () => {
+    const res = await cacheService.updateAllValues(...[]);
+    expect(res).toBe(false);
 });
 
 test('GetAllKeys', async () => {

@@ -1,4 +1,4 @@
-import {CurrencyRateResolver} from './resolvers.js';
+import {CurrencyRateResolver} from './resolvers';
 import {buildSchema} from 'type-graphql';
 import {GraphQLSchema} from 'graphql';
 

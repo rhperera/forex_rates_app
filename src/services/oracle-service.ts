@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import {CurrencyRate} from '../models/currency-rate';
 import {Config} from '../utils/config';
 import {splitBaseAndQuote} from '../utils/utils';
@@ -19,11 +19,14 @@ export class FixerService implements IOracleService {
     }
 
     getRateOfPair = async (quote: string) : Promise<CurrencyRate> => {
+        if (quote === null || quote == '') {
+            console.log('Null string received');
+            return null;
+        }
         const qArray: string[] = splitBaseAndQuote(quote);
 
         try {
-            const response = await axios.get(`${this.endPoint}/latest`,
-                {params: this.getParams([qArray[0], qArray[1]])});
+            const response = await this.getFromAPI([qArray[0], qArray[1]]);
 
             if (response.status === 200 && response.data.success === true ) {
                 const cR: CurrencyRate = new CurrencyRate(quote, this.calculateRate(
@@ -48,12 +51,11 @@ export class FixerService implements IOracleService {
             keySet.add(qArray[0]);
             keySet.add(qArray[1]);
         });
-        const quoteRates: Array<[key: string, value: string]> = [];
         console.log(keySet);
+        const quoteRates: Array<[key: string, value: string]> = [];
         try {
-            const response = await axios.get(`${this.endPoint}/latest`,
-                {params: this.getParams([...keySet])});
-            if (response.status === 200 && response.data.success === true ) {
+            const response = await this.getFromAPI([...keySet]);
+            if (response !== null && response.status === 200 && response.data.success === true ) {
                 keys.forEach((key) => {
                     const qArray: string[] = splitBaseAndQuote(key);
                     const rate: number = this.calculateRate(
@@ -66,6 +68,17 @@ export class FixerService implements IOracleService {
         } catch (error) {
             console.log(error);
             return quoteRates;
+        }
+    }
+
+    private async getFromAPI(keySet: string[]): Promise<AxiosResponse<any>> {
+        try {
+            const response = await axios.get(`${this.endPoint}/latest`,
+                {params: this.getParams(keySet)});
+            return response;
+        } catch (err) {
+            console.log(err);
+            return null;
         }
     }
 
