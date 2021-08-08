@@ -14,7 +14,7 @@ export class DataService {
 
     async initialUpdate() {
         await this.cacheService.add(new CurrencyRate('USD-SGD', 0.0, 0.0));
-        await this.cacheService.add(new CurrencyRate('USDK-HKD', 0.0, 0.0));
+        await this.cacheService.add(new CurrencyRate('USD-HKD', 0.0, 0.0));
         this.updateCacheOnTimer();
     }
 
