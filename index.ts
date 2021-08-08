@@ -8,7 +8,7 @@ import {Config} from './src/utils/config';
 import {DataService} from './src/services/data-service';
 
 const config: Config = Config.getInstance();
-const app: express.Application = express();
+export const app: express.Application = express();
 const router: express.Router = express.Router();
 const currencyHandler: CurrencyHandler = new CurrencyHandler();
 export const httpServer: Server = createServer(app);
@@ -30,8 +30,10 @@ export const startApolloServer = async () => {
     initRouters();
     apolloServer.applyMiddleware({app});
     const port = parseInt(config.PORT);
-    httpServer.listen(port, () =>
-        console.log(`Server is now running on http://localhost:${port}/graphql`));
+    httpServer.listen(port, () => {
+        app.emit('ServerStarted');
+        console.log(`GraphQL Server is now running on http://localhost:${port}/graphql`);
+    });
 };
 
 startApolloServer();

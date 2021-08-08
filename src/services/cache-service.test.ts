@@ -51,7 +51,8 @@ test('GetAllKeys', async () => {
     arr.push(['SGD-LKR', '200']);
     await cacheService.updateAllValues(...arr);
     const keys = await cacheService.getAllKeys();
-    expect(keys).toEqual(['SGD-LKR', 'USD-SGD']);
+    expect(keys).toContain('USD-SGD');
+    expect(keys).toContain('SGD-LKR');
 });
 
 afterAll(async () => {

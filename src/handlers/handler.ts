@@ -22,7 +22,7 @@ export class CurrencyHandler {
     async upateCache(req: express.Request, res: express.Response) {
         if (req.hostname.toString() !== 'localhost' ) {
             console.log(req.hostname.toString());
-            res.status(405).send();
+            res.status(401).send();
         } else {
             const httpResObj: HttpResponse = new HttpResponse();
             await DataService.getInstance().updateCacheOnTimer();
